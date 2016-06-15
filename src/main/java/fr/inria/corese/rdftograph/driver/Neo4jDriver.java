@@ -3,26 +3,27 @@
  * To change this template file, choose Tools | Templates
  * and openDb the template in the editor.
  */
-package fr.inria.wimmics.createreposail.driver;
+package fr.inria.corese.rdftograph.driver;
 
-import fr.inria.wimmics.createreposail.RdfToGraph;
-import static fr.inria.wimmics.createreposail.RdfToGraph.BNODE;
-import static fr.inria.wimmics.createreposail.RdfToGraph.IRI;
-import static fr.inria.wimmics.createreposail.RdfToGraph.KIND;
-import static fr.inria.wimmics.createreposail.RdfToGraph.LANG;
-import static fr.inria.wimmics.createreposail.RdfToGraph.LITERAL;
-import static fr.inria.wimmics.createreposail.RdfToGraph.TYPE;
-import static fr.inria.wimmics.createreposail.RdfToGraph.VALUE;
+import fr.inria.corese.rdftograph.RdfToGraph;
+import static fr.inria.corese.rdftograph.RdfToGraph.BNODE;
+import static fr.inria.corese.rdftograph.RdfToGraph.IRI;
+import static fr.inria.corese.rdftograph.RdfToGraph.KIND;
+import static fr.inria.corese.rdftograph.RdfToGraph.LANG;
+import static fr.inria.corese.rdftograph.RdfToGraph.LITERAL;
+import static fr.inria.corese.rdftograph.RdfToGraph.TYPE;
+import static fr.inria.corese.rdftograph.RdfToGraph.VALUE;
 import java.io.File;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Label;
@@ -32,6 +33,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
+import org.neo4j.tinkerpop.api.impl.Neo4jFactoryImpl;
 
 /**
  *
@@ -39,7 +41,7 @@ import org.openrdf.model.Value;
  */
 public class Neo4jDriver extends GdbDriver {
 
-	BatchInserter inserter;
+	Neo4jGraph graph;
 	private static final Logger LOGGER = Logger.getLogger(Neo4jDriver.class.getName());
 
 	@Override
@@ -49,7 +51,7 @@ public class Neo4jDriver extends GdbDriver {
 			if (getWipeOnOpen()) {
 				delete(dbPath);
 			}
-			inserter = BatchInserters.inserter(dbDir);
+			graph = Neo4jGraph.open(dbPath);
 		} catch (Exception e) {
 			LOGGER.severe(e.toString());
 			e.printStackTrace();
@@ -58,7 +60,12 @@ public class Neo4jDriver extends GdbDriver {
 
 	@Override
 	public void closeDb() {
-		inserter.shutdown();
+		try {
+			graph.tx().commit();
+			graph.close();
+		} catch (Exception ex) {
+			Logger.getLogger(Neo4jDriver.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	protected boolean nodeEquals(Node endNode, Value object) {
@@ -87,7 +94,7 @@ public class Neo4jDriver extends GdbDriver {
 	private static enum RelTypes implements RelationshipType {
 		CONTEXT
 	}
-	Map<String, Long> alreadySeen = new HashMap<>();
+	Map<String, Object> alreadySeen = new HashMap<>();
 
 	String nodeId(Value v) {
 		StringBuilder result = new StringBuilder();
@@ -123,40 +130,60 @@ public class Neo4jDriver extends GdbDriver {
 	@Override
 	public Object createNode(Value v
 	) {
-		Long result = null;
+//		Graph g = graph.getTx();
+		Object result = null;
 		String nodeId = nodeId(v);
 		if (alreadySeen.containsKey(nodeId)) {
 			return alreadySeen.get(nodeId);
 		}
-		Label label;
-		Map<String, Object> properties = new HashMap();
 		switch (RdfToGraph.getKind(v)) {
 			case IRI:
-			case BNODE:
-				label = DynamicLabel.label(v.stringValue());
-				properties.put(VALUE, v.stringValue());
-				properties.put(KIND, RdfToGraph.getKind(v));
-				result = inserter.createNode(properties, label);
+			case BNODE: {
+				Vertex newVertex = graph.addVertex();
+				newVertex.property(VALUE, v.stringValue());
+				newVertex.property(KIND, RdfToGraph.getKind(v));
+				result = newVertex.id();
 				break;
-			case LITERAL:
+			}
+			case LITERAL: {
 				Literal l = (Literal) v;
-				label = DynamicLabel.label(l.getLabel());
-				properties.put(VALUE, l.getLabel());
-				properties.put(TYPE, l.getDatatype().toString());
-				properties.put(KIND, RdfToGraph.getKind(v));
+				Vertex newVertex = graph.addVertex();
+				newVertex.property(VALUE, l.getLabel());
+				newVertex.property(TYPE, l.getDatatype().toString());
+				newVertex.property(KIND, RdfToGraph.getKind(v));
 				if (l.getLanguage().isPresent()) {
-					properties.put(LANG, l.getLanguage().get());
+					newVertex.property(LANG, l.getLanguage().get());
 				}
-				result = inserter.createNode(properties, label);
+				result = newVertex.id();
 				break;
+			}
 		}
+//		graph.commit();
 		alreadySeen.put(nodeId, result);
 		return result;
 	}
 
+	static RelationshipType rdfEdge = DynamicRelationshipType.withName("rdf_edge");
+
 	@Override
 	public Object createRelationship(Object source, Object object, String predicate, Map<String, Object> properties
 	) {
-		return inserter.createRelationship((Long) source, (Long) object, DynamicRelationshipType.withName(predicate), properties);
+		Object result = null;
+//		OrientGraph g = graph.getTx();
+		Vertex vSource = graph.vertices(source).next();
+		Vertex vObject = graph.vertices(object).next();
+		ArrayList<Object> p = new ArrayList<>();
+		properties.keySet().stream().forEach((key) -> {
+			p.add(key);
+			p.add(properties.get(key));
+		});
+		p.add(VALUE);
+		p.add(predicate);
+		Edge e = vSource.addEdge("rdf_edge", vObject, p.toArray());
+		result = e.id();
+//		g.commit();
+		return result;
+		//properties.put(VALUE, predicate);
+		//return g.createRelationship((Long) source, (Long) object, rdfEdge, properties);
 	}
 }

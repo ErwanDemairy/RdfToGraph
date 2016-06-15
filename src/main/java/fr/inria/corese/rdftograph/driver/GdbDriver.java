@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and openDb the template in the editor.
  */
-package fr.inria.wimmics.createreposail.driver;
+package fr.inria.corese.rdftograph.driver;
 
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -15,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openrdf.model.Value;
 
 /**
@@ -23,7 +23,7 @@ import org.openrdf.model.Value;
  * @author edemairy
  */
 public abstract class GdbDriver {
-
+	private static Logger LOGGER = Logger.getLogger(GdbDriver.class.getName());
 	private boolean wipeOnOpen;
 
 	public abstract void openDb(String dbPath);

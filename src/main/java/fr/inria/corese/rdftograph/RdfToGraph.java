@@ -1,9 +1,9 @@
 /*
  * Copyright Inria 2016. 
  */
-package fr.inria.wimmics.createreposail;
+package fr.inria.corese.rdftograph;
 
-import fr.inria.wimmics.createreposail.driver.GdbDriver;
+import fr.inria.corese.rdftograph.driver.GdbDriver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,8 +35,9 @@ import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
 
 /**
- * Tool that: (i) read a RDF file using sesame library; (ii) write the content
- * into a neo4j DB using the neo4j library.
+ * This application: 
+ *   (i) read a RDF file using sesame library; 
+ *   (ii) write the content into a neo4j DB using the neo4j library.
  *
  * @author edemairy
  */
@@ -60,8 +61,8 @@ public class RdfToGraph {
 
 	static {
 		DRIVER_TO_CLASS = new HashMap<>();
-		DRIVER_TO_CLASS.put("neo4j", "fr.inria.wimmics.createreposail.driver.Neo4jDriver");
-		DRIVER_TO_CLASS.put("orientdb", "fr.inria.wimmics.createreposail.driver.OrientDbDriver");
+		DRIVER_TO_CLASS.put("neo4j", "fr.inria.corese.rdftograph.driver.Neo4jDriver");
+		DRIVER_TO_CLASS.put("orientdb", "fr.inria.corese.rdftograph.driver.OrientDbDriver");
 	}
 
 	public RdfToGraph() {
@@ -93,7 +94,7 @@ public class RdfToGraph {
 		if (args.length < 2) {
 			System.err.println("Usage: rdfToGraph fileName db_path [backend]");
 			System.err.println("if the parser cannot guess the format of the input file, NQUADS is used.");
-			System.err.println("backend = neo4j | orientdb | tneo4j | torientdb");
+			System.err.println("backend = neo4j | orientdb");
 			System.err.println("  neo4j     = neo4j directly");
 			System.err.println("  orientdb  = orientdb directly");
 			System.exit(1);
@@ -182,7 +183,7 @@ public class RdfToGraph {
 
 			Map<String, Object> properties = new HashMap();
 			properties.put(CONTEXT, contextString);
-			Object relation = driver.createRelationship(sourceNode, objectNode, predicat.stringValue(), properties);
+			driver.createRelationship(sourceNode, objectNode, predicat.stringValue(), properties);
 			triples++;
 			if (triples > THRESHOLD) {
 				break;

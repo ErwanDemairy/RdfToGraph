@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.wimmics.createreposail.driver;
+package fr.inria.corese.rdftograph.driver;
 
-import fr.inria.wimmics.createreposail.RdfToGraph;
-import static fr.inria.wimmics.createreposail.RdfToGraph.BNODE;
-import static fr.inria.wimmics.createreposail.RdfToGraph.IRI;
-import static fr.inria.wimmics.createreposail.RdfToGraph.KIND;
-import static fr.inria.wimmics.createreposail.RdfToGraph.LANG;
-import static fr.inria.wimmics.createreposail.RdfToGraph.LITERAL;
-import static fr.inria.wimmics.createreposail.RdfToGraph.TYPE;
-import static fr.inria.wimmics.createreposail.RdfToGraph.VALUE;
+import fr.inria.corese.rdftograph.RdfToGraph;
+import static fr.inria.corese.rdftograph.RdfToGraph.BNODE;
+import static fr.inria.corese.rdftograph.RdfToGraph.IRI;
+import static fr.inria.corese.rdftograph.RdfToGraph.KIND;
+import static fr.inria.corese.rdftograph.RdfToGraph.LANG;
+import static fr.inria.corese.rdftograph.RdfToGraph.LITERAL;
+import static fr.inria.corese.rdftograph.RdfToGraph.TYPE;
+import static fr.inria.corese.rdftograph.RdfToGraph.VALUE;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

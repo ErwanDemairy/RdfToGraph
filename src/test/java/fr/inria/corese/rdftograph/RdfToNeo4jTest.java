@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.wimmics.createreposail;
+package fr.inria.corese.rdftograph;
 
+import fr.inria.corese.rdftograph.RdfToGraph;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
