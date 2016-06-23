@@ -12,7 +12,8 @@ import static fr.inria.corese.rdftograph.RdfToGraph.KIND;
 import static fr.inria.corese.rdftograph.RdfToGraph.LANG;
 import static fr.inria.corese.rdftograph.RdfToGraph.LITERAL;
 import static fr.inria.corese.rdftograph.RdfToGraph.TYPE;
-import static fr.inria.corese.rdftograph.RdfToGraph.VALUE;
+import static fr.inria.corese.rdftograph.RdfToGraph.EDGE_VALUE;
+import static fr.inria.corese.rdftograph.RdfToGraph.VERTEX_VALUE;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,11 +76,11 @@ public class Neo4jDriver extends GdbDriver {
 			switch (RdfToGraph.getKind(object)) {
 				case BNODE:
 				case IRI:
-					result &= endNode.getProperty(VALUE).equals(object.stringValue());
+					result &= endNode.getProperty(EDGE_VALUE).equals(object.stringValue());
 					break;
 				case LITERAL:
 					Literal l = (Literal) object;
-					result &= endNode.getProperty(VALUE).equals(l.getLabel());
+					result &= endNode.getProperty(EDGE_VALUE).equals(l.getLabel());
 					result &= endNode.getProperty(TYPE).equals(l.getDatatype().stringValue());
 					if (l.getLanguage().isPresent()) {
 						result &= endNode.hasProperty(LANG) && endNode.getProperty(LANG).equals(l.getLanguage().get());
@@ -140,7 +141,7 @@ public class Neo4jDriver extends GdbDriver {
 			case IRI:
 			case BNODE: {
 				Vertex newVertex = graph.addVertex();
-				newVertex.property(VALUE, v.stringValue());
+				newVertex.property(VERTEX_VALUE, v.stringValue());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				result = newVertex.id();
 				break;
@@ -148,7 +149,7 @@ public class Neo4jDriver extends GdbDriver {
 			case LITERAL: {
 				Literal l = (Literal) v;
 				Vertex newVertex = graph.addVertex();
-				newVertex.property(VALUE, l.getLabel());
+				newVertex.property(VERTEX_VALUE, l.getLabel());
 				newVertex.property(TYPE, l.getDatatype().toString());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				if (l.getLanguage().isPresent()) {
@@ -158,7 +159,6 @@ public class Neo4jDriver extends GdbDriver {
 				break;
 			}
 		}
-//		graph.commit();
 		alreadySeen.put(nodeId, result);
 		return result;
 	}
@@ -177,13 +177,17 @@ public class Neo4jDriver extends GdbDriver {
 			p.add(key);
 			p.add(properties.get(key));
 		});
-		p.add(VALUE);
+		p.add(EDGE_VALUE);
 		p.add(predicate);
 		Edge e = vSource.addEdge("rdf_edge", vObject, p.toArray());
 		result = e.id();
-//		g.commit();
 		return result;
-		//properties.put(VALUE, predicate);
+		//properties.put(EDGE_VALUE, predicate);
 		//return g.createRelationship((Long) source, (Long) object, rdfEdge, properties);
+	}
+
+	@Override
+	public void commit() {
+		graph.tx().commit();
 	}
 }

@@ -12,7 +12,8 @@ import static fr.inria.corese.rdftograph.RdfToGraph.KIND;
 import static fr.inria.corese.rdftograph.RdfToGraph.LANG;
 import static fr.inria.corese.rdftograph.RdfToGraph.LITERAL;
 import static fr.inria.corese.rdftograph.RdfToGraph.TYPE;
-import static fr.inria.corese.rdftograph.RdfToGraph.VALUE;
+import static fr.inria.corese.rdftograph.RdfToGraph.VERTEX_VALUE;
+import static fr.inria.corese.rdftograph.RdfToGraph.EDGE_VALUE;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -53,7 +54,11 @@ public class OrientDbDriver extends GdbDriver {
 
 	@Override
 	public void closeDb() {
-		graph.close();
+		try {
+			graph.getTx().close();
+		} catch (Exception ex) {
+			Logger.getLogger(OrientDbDriver.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	Map<String, Object> alreadySeen = new HashMap<>();
@@ -94,7 +99,7 @@ public class OrientDbDriver extends GdbDriver {
 			case IRI:
 			case BNODE: {
 				Vertex newVertex = g.addVertex();
-				newVertex.property(VALUE, v.stringValue());
+				newVertex.property(VERTEX_VALUE, v.stringValue());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				result = newVertex.id();
 				break;
@@ -102,7 +107,7 @@ public class OrientDbDriver extends GdbDriver {
 			case LITERAL: {
 				Literal l = (Literal) v;
 				Vertex newVertex = g.addVertex();
-				newVertex.property(VALUE, l.getLabel());
+				newVertex.property(VERTEX_VALUE, l.getLabel());
 				newVertex.property(TYPE, l.getDatatype().toString());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				if (l.getLanguage().isPresent()) {
@@ -128,7 +133,7 @@ public class OrientDbDriver extends GdbDriver {
 			p.add(key);
 			p.add(properties.get(key));
 		});
-		p.add(VALUE);
+		p.add(EDGE_VALUE);
 		p.add(predicate);
 		Edge e = vSource.addEdge("rdf_edge", vObject, p.toArray());
 		result = e.id();
@@ -136,4 +141,8 @@ public class OrientDbDriver extends GdbDriver {
 		return result;
 	}
 
+	@Override
+	public void commit() {
+		graph.getTx().commit();
+	}
 }

@@ -23,15 +23,15 @@
 					</archive>
 				</configuration>
 			</plugin>
-		 <plugin>
-		  <groupId>org.apache.maven.plugins</groupId>
-		  <artifactId>maven-compiler-plugin</artifactId>
-		  <version>2.3.2</version>
-		  <configuration>
-		   <source>1.8</source>
-		   <target>1.8</target>
-		  </configuration>
-		 </plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<version>2.3.2</version>
+			 <configuration>
+			  <source>1.8</source>
+			  <target>1.8</target>
+			 </configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -78,13 +78,13 @@
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
 			<artifactId>neo4j-gremlin</artifactId>
-			<version>3.1.1-incubating</version>
+			<version>3.0.1-incubating</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>com.michaelpollmeier</groupId>
 			<artifactId>orientdb-gremlin</artifactId>
-			<version>3.1.1-incubating.1</version>
+			<version>3.0.2.incubating.0</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
@@ -92,6 +92,32 @@
 			<artifactId>neo4j-tinkerpop-api-impl</artifactId>
 			<version>0.3-2.3.2</version>
 			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.thinkaurelius.titan</groupId>
+			<artifactId>titan</artifactId>
+			<version>1.0.0</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.thinkaurelius.titan</groupId>
+			<artifactId>titan-core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-core</artifactId>
+			<version>3.0.1-incubating</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thinkaurelius.titan</groupId>
+			<artifactId>titan-berkeleyje</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<artifactId>groovy-all</artifactId>
+			<groupId>org.codehaus.groovy</groupId>
+			<version>2.0.5</version>
 		</dependency>
 	</dependencies>
 	<properties>
