@@ -21,20 +21,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
-import org.neo4j.tinkerpop.api.impl.Neo4jFactoryImpl;
 
 /**
  *
@@ -53,6 +46,9 @@ public class Neo4jDriver extends GdbDriver {
 				delete(dbPath);
 			}
 			graph = Neo4jGraph.open(dbPath);
+			graph.cypher("CREATE INDEX ON :rdf_edge(e_value)");
+			graph.cypher("CREATE INDEX ON :rdf_vertex(v_value)");
+			graph.tx().commit();
 		} catch (Exception e) {
 			LOGGER.severe(e.toString());
 			e.printStackTrace();
@@ -140,7 +136,7 @@ public class Neo4jDriver extends GdbDriver {
 		switch (RdfToGraph.getKind(v)) {
 			case IRI:
 			case BNODE: {
-				Vertex newVertex = graph.addVertex();
+				Vertex newVertex = graph.addVertex("rdf_vertex");
 				newVertex.property(VERTEX_VALUE, v.stringValue());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				result = newVertex.id();
@@ -148,7 +144,7 @@ public class Neo4jDriver extends GdbDriver {
 			}
 			case LITERAL: {
 				Literal l = (Literal) v;
-				Vertex newVertex = graph.addVertex();
+				Vertex newVertex = graph.addVertex("rdf_vertex");
 				newVertex.property(VERTEX_VALUE, l.getLabel());
 				newVertex.property(TYPE, l.getDatatype().toString());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
@@ -162,8 +158,6 @@ public class Neo4jDriver extends GdbDriver {
 		alreadySeen.put(nodeId, result);
 		return result;
 	}
-
-	static RelationshipType rdfEdge = DynamicRelationshipType.withName("rdf_edge");
 
 	@Override
 	public Object createRelationship(Object source, Object object, String predicate, Map<String, Object> properties

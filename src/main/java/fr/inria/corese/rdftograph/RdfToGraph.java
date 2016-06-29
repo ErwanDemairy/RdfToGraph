@@ -89,7 +89,12 @@ public class RdfToGraph {
 			triples++;
 			if (triples % CHUNK_SIZE == 0) {
 				LOGGER.info("" + triples);
-				driver.commit();
+				try {
+					driver.commit();
+				} catch (Exception ex) {
+					LOGGER.severe("Trying to pursue after: " + ex.getMessage());
+					ex.printStackTrace();
+				}
 			}
 		}
 
@@ -213,7 +218,7 @@ public class RdfToGraph {
 		}
 	}
 
-	final static private int CHUNK_SIZE = 100_000; //Integer.MAX_VALUE;
+	final static private int CHUNK_SIZE = 50_000; //Integer.MAX_VALUE;
 
 	public void writeModelToNeo4j() {
 		int triples = 0;
