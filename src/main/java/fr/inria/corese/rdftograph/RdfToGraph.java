@@ -4,19 +4,19 @@
 package fr.inria.corese.rdftograph;
 
 import fr.inria.corese.rdftograph.driver.GdbDriver;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.IRI;
@@ -52,7 +52,8 @@ public class RdfToGraph {
 	public static final String TYPE = "type";
 	public static final String EDGE_VALUE = "e_value";
 	public static final String VERTEX_VALUE = "v_value";
-	public static final String RDF_LABEL = "rdf_edge";
+	public static final String RDF_EDGE_LABEL = "rdf_edge";
+	public static final String RDF_VERTEX_LABEL = "rdf_edge";
 
 	private static Logger LOGGER = Logger.getLogger(RdfToGraph.class.getName());
 	protected Model model;
@@ -125,7 +126,7 @@ public class RdfToGraph {
 		return result;
 	}
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 		if (args.length < 2) {
 			System.err.println("Usage: rdfToGraph fileName db_path [backend]");
 			System.err.println("if the parser cannot guess the format of the input file, NQUADS is used.");
@@ -146,7 +147,12 @@ public class RdfToGraph {
 		converter.setDriver(driverName);
 
 		String rdfFileName = args[0];
-		FileInputStream inputStream = new FileInputStream(new File(rdfFileName));
+		InputStream inputStream;
+		if (rdfFileName.endsWith(".gz")) {
+			inputStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(rdfFileName)));
+		} else {
+			inputStream = new FileInputStream(new File(rdfFileName));
+		}
 		String dbPath = args[1];
 
 		Optional<RDFFormat> format = Rio.getParserFormatForFileName(rdfFileName);

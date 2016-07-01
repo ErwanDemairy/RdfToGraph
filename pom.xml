@@ -32,10 +32,6 @@
 		    <goals>
 		     <goal>compile</goal>
 		    </goals>
-		    <configuration>
-		     <source>1.8</source>
-		     <target>1.8</target>
-		    </configuration>
 		    <id>compileId</id>
 		   </execution>
 		   <execution>
@@ -43,25 +39,13 @@
 		     <goal>compile</goal>
 		     <goal>testCompile</goal>
 		    </goals>
-		    <configuration>
-		     <compilerId>groovy-eclipse-compiler</compilerId>
-		    </configuration>
 		    <id>testCompileId</id>
 		   </execution>
 		  </executions>
-		  <dependencies>
-		   <dependency>
-		    <groupId>org.codehaus.groovy</groupId>
-		    <artifactId>groovy-eclipse-compiler</artifactId>
-		    <version>2.6.0-01</version>
-		   </dependency>
-		  </dependencies>
-		 </plugin>
-		 <plugin>
-		  <artifactId>groovy-eclipse-compiler</artifactId>
-		  <groupId>org.codehaus.groovy</groupId>
-		  <version>2.6.0-01</version>
-		  <extensions>true</extensions>
+		  <configuration>
+		   <source>1.8</source>
+		   <target>1.8</target>
+		  </configuration>
 		 </plugin>
 		</plugins>
 	</build>
@@ -84,11 +68,6 @@
 			<type>pom</type>
 		</dependency>
 	 <dependency>
-	  <artifactId>groovy-all</artifactId>
-	  <groupId>org.codehaus.groovy</groupId>
-	  <version>2.0.5</version>
-	 </dependency>
-	 <dependency>
 	  <groupId>org.apache.tinkerpop</groupId>
 	  <artifactId>neo4j-gremlin</artifactId>
 	  <version>3.2.0-incubating</version>
@@ -103,6 +82,12 @@
 	  <groupId>org.apache.lucene</groupId>
 	  <artifactId>lucene-core</artifactId>
 	  <version>3.6.2</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>com.michaelpollmeier</groupId>
+	  <artifactId>orientdb-gremlin</artifactId>
+	  <version>3.2.0-incubating.0</version>
+	  <type>jar</type>
 	 </dependency>
 	</dependencies>
 	<properties>

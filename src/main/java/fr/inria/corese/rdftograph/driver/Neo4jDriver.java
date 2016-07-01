@@ -13,6 +13,8 @@ import static fr.inria.corese.rdftograph.RdfToGraph.LANG;
 import static fr.inria.corese.rdftograph.RdfToGraph.LITERAL;
 import static fr.inria.corese.rdftograph.RdfToGraph.TYPE;
 import static fr.inria.corese.rdftograph.RdfToGraph.EDGE_VALUE;
+import static fr.inria.corese.rdftograph.RdfToGraph.RDF_EDGE_LABEL;
+import static fr.inria.corese.rdftograph.RdfToGraph.RDF_VERTEX_LABEL;
 import static fr.inria.corese.rdftograph.RdfToGraph.VERTEX_VALUE;
 import java.io.File;
 import java.util.ArrayList;
@@ -93,6 +95,13 @@ public class Neo4jDriver extends GdbDriver {
 	}
 	Map<String, Object> alreadySeen = new HashMap<>();
 
+	/**
+	 * Returns a unique id to store as the key for alreadySeen, to prevent
+	 * creation of duplicates.
+	 *
+	 * @param v
+	 * @return
+	 */
 	String nodeId(Value v) {
 		StringBuilder result = new StringBuilder();
 		String kind = RdfToGraph.getKind(v);
@@ -125,8 +134,7 @@ public class Neo4jDriver extends GdbDriver {
 	 * @return
 	 */
 	@Override
-	public Object createNode(Value v
-	) {
+	public Object createNode(Value v) {
 //		Graph g = graph.getTx();
 		Object result = null;
 		String nodeId = nodeId(v);
@@ -136,7 +144,7 @@ public class Neo4jDriver extends GdbDriver {
 		switch (RdfToGraph.getKind(v)) {
 			case IRI:
 			case BNODE: {
-				Vertex newVertex = graph.addVertex("rdf_vertex");
+				Vertex newVertex = graph.addVertex(RDF_VERTEX_LABEL);
 				newVertex.property(VERTEX_VALUE, v.stringValue());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
 				result = newVertex.id();
@@ -144,7 +152,7 @@ public class Neo4jDriver extends GdbDriver {
 			}
 			case LITERAL: {
 				Literal l = (Literal) v;
-				Vertex newVertex = graph.addVertex("rdf_vertex");
+				Vertex newVertex = graph.addVertex(RDF_VERTEX_LABEL);
 				newVertex.property(VERTEX_VALUE, l.getLabel());
 				newVertex.property(TYPE, l.getDatatype().toString());
 				newVertex.property(KIND, RdfToGraph.getKind(v));
@@ -173,7 +181,7 @@ public class Neo4jDriver extends GdbDriver {
 		});
 		p.add(EDGE_VALUE);
 		p.add(predicate);
-		Edge e = vSource.addEdge("rdf_edge", vObject, p.toArray());
+		Edge e = vSource.addEdge(RDF_EDGE_LABEL, vObject, p.toArray());
 		result = e.id();
 		return result;
 		//properties.put(EDGE_VALUE, predicate);
